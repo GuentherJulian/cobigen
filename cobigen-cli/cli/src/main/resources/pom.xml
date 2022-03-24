@@ -58,7 +58,7 @@
     </dependency>
     <dependency>
       <groupId>com.devonfw.cobigen</groupId>
-      <artifactId>templates-parent</artifactId>
+      <artifactId>templates-devon4j</artifactId>
       <version>${revision}</version>
     </dependency>
   </dependencies>
