@@ -60,6 +60,10 @@ public class AbstractCliTest {
     devTemplatesPath = new File(AbstractCliTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())
         .getParentFile().getParentFile().getParentFile().getParentFile().toPath().resolve("cobigen-templates");
 
+    Path utilsPom = new File(AbstractCliTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+        .getParentFile().getParentFile().getParentFile().getParentFile().toPath().resolve("cobigen-templates")
+        .resolve("templates-devon4j-tests/src/test/resources/utils/pom.xml");
+
     // create a temporary directory cobigen-templates/template-sets/adapted containing the template sets
     Path tempFolderPath = tempFolderTemplates.getRoot().toPath();
     Path cobigenTemplatePath = tempFolderPath.resolve("cobigen-templates");
@@ -84,6 +88,20 @@ public class AbstractCliTest {
               } catch (IOException e) {
                 e.printStackTrace();
               }
+            }
+          }
+          if (path.getFileName().toString().equals("templates-devon4j-utils")) {
+            if (Files.exists(path.resolve("pom.xml"))) {
+              try {
+                Files.delete(path.resolve("pom.xml"));
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+            try {
+              Files.copy(utilsPom, path.resolve("pom.xml"));
+            } catch (IOException e) {
+              e.printStackTrace();
             }
           }
         });

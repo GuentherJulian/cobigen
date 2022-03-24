@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -45,6 +46,9 @@ public class TemplatesGenerationTest extends AbstractMavenTest {
         TemplatesGenerationTest.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile()
             .getParentFile().getParentFile().toPath();
 
+    Path utilsPom = new File(TemplatesGenerationTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+        .getParentFile().getParentFile().toPath().resolve("src/test/resources/utils/pom.xml");
+
     // create a temporary directory cobigen-templates/template-sets/adapted containing the template sets
     Path tempFolderPath = tempFolder.getRoot().toPath();
     Path cobigenTemplatePath = tempFolderPath.resolve("cobigen-templates");
@@ -52,25 +56,37 @@ public class TemplatesGenerationTest extends AbstractMavenTest {
       Files.createDirectory(cobigenTemplatePath);
 
       templatesProjectTemporary = cobigenTemplatePath.resolve(ConfigurationConstants.TEMPLATE_SETS_FOLDER);
-      Path templateSetsDownloadedFolder = templatesProjectTemporary.resolve(ConfigurationConstants.DOWNLOADED_FOLDER);
+      Path templateSetsAdaptedFolder = templatesProjectTemporary.resolve(ConfigurationConstants.ADAPTED_FOLDER);
       Files.createDirectory(templatesProjectTemporary);
-      Files.createDirectory(templateSetsDownloadedFolder);
+      Files.createDirectory(templateSetsAdaptedFolder);
 
-      try (Stream<Path> files = Files.list(templatesProject)) {
+      FileUtils.copyDirectory(templatesProject.toFile(), templateSetsAdaptedFolder.toFile());
+
+      try (Stream<Path> files = Files.list(templateSetsAdaptedFolder)) {
         files.forEach(path -> {
-          if (Files.isDirectory(path) && Files.exists(path.resolve("target"))) {
-            try (Stream<Path> targetFiles = Files.list(path.resolve("target"))) {
-              targetFiles.forEach(targetFile -> {
-                if (!Files.isDirectory(targetFile) && targetFile.toString().endsWith("jar")) {
-                  try {
-                    Files.copy(targetFile, templateSetsDownloadedFolder.resolve(targetFile.getFileName()));
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                  }
-                }
-              });
-            } catch (IOException ioException) {
-              ioException.printStackTrace();
+          if (Files.isDirectory(path)) {
+            Path resourcesFolder = path.resolve("src/main/resources");
+            Path templatesFolder = path.resolve(ConfigurationConstants.TEMPLATE_RESOURCE_FOLDER);
+            if (Files.exists(resourcesFolder) && !Files.exists(templatesFolder)) {
+              try {
+                Files.move(resourcesFolder, templatesFolder);
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+          if (path.getFileName().toString().equals("templates-devon4j-utils")) {
+            if (Files.exists(path.resolve("pom.xml"))) {
+              try {
+                Files.delete(path.resolve("pom.xml"));
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+            try {
+              Files.copy(utilsPom, path.resolve("pom.xml"));
+            } catch (IOException e) {
+              e.printStackTrace();
             }
           }
         });
