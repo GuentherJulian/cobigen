@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -53,23 +52,25 @@ public class TemplatesGenerationTest extends AbstractMavenTest {
       Files.createDirectory(cobigenTemplatePath);
 
       templatesProjectTemporary = cobigenTemplatePath.resolve(ConfigurationConstants.TEMPLATE_SETS_FOLDER);
-      Path templateSetsAdaptedFolder = templatesProjectTemporary.resolve(ConfigurationConstants.ADAPTED_FOLDER);
+      Path templateSetsDownloadedFolder = templatesProjectTemporary.resolve(ConfigurationConstants.DOWNLOADED_FOLDER);
       Files.createDirectory(templatesProjectTemporary);
-      Files.createDirectory(templateSetsAdaptedFolder);
+      Files.createDirectory(templateSetsDownloadedFolder);
 
-      FileUtils.copyDirectory(templatesProject.toFile(), templateSetsAdaptedFolder.toFile());
-
-      try (Stream<Path> files = Files.list(templateSetsAdaptedFolder)) {
+      try (Stream<Path> files = Files.list(templatesProject)) {
         files.forEach(path -> {
-          if (Files.isDirectory(path)) {
-            Path resourcesFolder = path.resolve("src/main/resources");
-            Path templatesFolder = path.resolve(ConfigurationConstants.TEMPLATE_RESOURCE_FOLDER);
-            if (Files.exists(resourcesFolder) && !Files.exists(templatesFolder)) {
-              try {
-                Files.move(resourcesFolder, templatesFolder);
-              } catch (IOException e) {
-                e.printStackTrace();
-              }
+          if (Files.isDirectory(path) && Files.exists(path.resolve("target"))) {
+            try (Stream<Path> targetFiles = Files.list(path.resolve("target"))) {
+              targetFiles.forEach(targetFile -> {
+                if (!Files.isDirectory(targetFile) && targetFile.toString().endsWith("jar")) {
+                  try {
+                    Files.copy(targetFile, templateSetsDownloadedFolder.resolve(targetFile.getFileName()));
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                  }
+                }
+              });
+            } catch (IOException ioException) {
+              ioException.printStackTrace();
             }
           }
         });
