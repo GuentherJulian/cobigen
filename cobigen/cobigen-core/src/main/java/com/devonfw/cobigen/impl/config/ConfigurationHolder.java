@@ -3,6 +3,7 @@ package com.devonfw.cobigen.impl.config;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -145,13 +146,19 @@ public class ConfigurationHolder {
       Path adaptedFolder = this.configurationPath.resolve(ConfigurationConstants.ADAPTED_FOLDER);
       Path downloadedFolder = this.configurationPath.resolve(ConfigurationConstants.DOWNLOADED_FOLDER);
 
-      String[] utils = adaptedFolder.toFile().list(utilsFilter);
-      if (utils.length > 0) {
-        return adaptedFolder.resolve(utils[0]);
+      String[] utils;
+      if (Files.exists(adaptedFolder)) {
+        utils = adaptedFolder.toFile().list(utilsFilter);
+        if (utils.length > 0) {
+          return adaptedFolder.resolve(utils[0]);
+        }
       }
-      utils = downloadedFolder.toFile().list(utilsFilter);
-      if (utils.length > 0) {
-        return downloadedFolder.resolve(utils[0]);
+
+      if (Files.exists(downloadedFolder)) {
+        utils = downloadedFolder.toFile().list(utilsFilter);
+        if (utils.length > 0) {
+          return downloadedFolder.resolve(utils[0]);
+        }
       }
       return null;
     }
