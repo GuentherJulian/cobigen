@@ -49,7 +49,7 @@ public class AbstractCliTest {
   protected static Path devTemplatesPathTemp;
 
   /**
-   * Determine the devon4j-templates development folder
+   * Determine the templates development folder and create a copy of it in the temp directory
    *
    * @throws URISyntaxException if the path could not be created properly
    * @throws IOException if accessing a template directory directory fails

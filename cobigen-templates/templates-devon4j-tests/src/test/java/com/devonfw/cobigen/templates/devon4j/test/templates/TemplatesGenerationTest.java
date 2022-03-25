@@ -36,8 +36,10 @@ public class TemplatesGenerationTest extends AbstractMavenTest {
   protected static Path templatesProjectTemporary;
 
   /**
+   * Creates a copy of the templates project in the temp directory
+   *
    * @throws URISyntaxException if the path could not be created properly
-   * @throws IOException if accessing a template directory directory fails
+   * @throws IOException if accessing a directory or file fails
    */
   @BeforeClass
   public static void setupDevTemplates() throws URISyntaxException, IOException {
